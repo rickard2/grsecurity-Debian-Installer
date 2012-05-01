@@ -4,6 +4,12 @@
 # Rickard Andersson <rickard@0x539.se>
 #
 # Version 1.0, 2012-03-31
+#
+# Version 1.1, 2012-05-01
+# * The lguest folder seems to have been moved as of kernel 3.3, changed the code to
+#   try to find the directory dynamically
+#
+
 
 if [ `whoami` != "root" ]; then
 	echo "This script needs to be run as root!"
@@ -177,10 +183,13 @@ patch -s -p1 < ../grsecurity-$GRSEC.patch
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 
-# Fix http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=638012 
+# Fix http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=638012
+#
+# the lguest directory seems to be moving around quite a bit, as of 3.3.something
+# it resides under the tools directory. The best approach should be to just search for it 
 if [ $BRANCH -eq 3 ]; then
 	cd Documentation
-	ln -s virtual/lguest
+	find .. -name lguest.c | xargs dirname | xargs ln -s
 	cd ..
 fi
 
