@@ -194,7 +194,7 @@ if [ $BRANCH -eq 3 ]; then
 fi
 
 cp /boot/config-`uname -r` .config
-if [ `grep "CONFIG_GRKERNSEC=y" .config | wc -l` -eq 10 ]; then
+if [ -z `grep "CONFIG_GRKERNSEC=y" .config ]; then
 	echo "==> Current kernel doesn't seem to be running grsecurity. Running 'make menuconfig'"
 	make menuconfig
 else
