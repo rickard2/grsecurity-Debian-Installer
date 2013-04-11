@@ -194,7 +194,7 @@ if [ $BRANCH -eq 3 ]; then
 fi
 
 cp /boot/config-`uname -r` .config
-if [ `grep "CONFIG_GRKERNSEC=y" .config | wc -l` -eq 10 ]; then
+if [ -z `grep "CONFIG_GRKERNSEC=y" .config` ]; then
 	echo "==> Current kernel doesn't seem to be running grsecurity. Running 'make menuconfig'"
 	make menuconfig
 else
@@ -214,7 +214,8 @@ if [ $? -eq 0 ]; then echo "phase 2 OK ... "; else echo "Failed"; exit 1; fi
 cd ..
 
 echo -n "==> Installing kernel ... "
-dpkg -i linux-image-$KERNEL-grsec_`echo $REVISION`_i386.deb
+ARCH=`uname -r | sed 's/.*-//'`
+dpkg -i linux-image-$KERNEL-grsec_`echo $REVISION`_$ARCH.deb
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 
