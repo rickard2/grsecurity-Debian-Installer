@@ -9,6 +9,8 @@
 # * The lguest folder seems to have been moved as of kernel 3.3, changed the code to
 #   try to find the directory dynamically
 #
+# Version 1.1.1, 2013-10-20
+# * Grsecurity.net switched to two RSS feeds for the 2.6 and 3.x stable branches
 
 
 if [ `whoami` != "root" ]; then
@@ -50,11 +52,12 @@ The installation will be carried out in the following steps:
 echo "==> Checking current versions of grsecurity ..."
 
 STABLE_VERSIONS=`curl -s https://grsecurity.net/stable_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
+STABLE2_VERSIONS=`curl -s https://grsecurity.net/stable2_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
 TESTING_VERSIONS=`curl -s https://grsecurity.net/testing_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
 
 COUNTER=0
 
-for x in $STABLE_VERSIONS; do
+for x in $STABLE_VERSIONS $STABLE2_VERSIONS; do
 
 	let COUNTER=COUNTER+1
 
