@@ -11,6 +11,8 @@
 #
 # Version 1.1.1, 2013-10-20
 # * Grsecurity.net switched to two RSS feeds for the 2.6 and 3.x stable branches
+# * Added gcc-plugin-dev as a requirement
+# * Fixed issues with architecture in the kernel package name after creation
 
 
 if [ `whoami` != "root" ]; then
@@ -35,7 +37,7 @@ The installation will be carried out in the following steps:
 2. Letting you chose which version you would like to install
 3. Download PGP keys for download verification (first run only)
 4. Install the following debian packages if needed:
-     build-essential bin86 kernel-package libncurses5-dev zlib1g-dev curl
+     build-essential bin86 kernel-package libncurses5-dev zlib1g-dev curl gcc-plugin-dev
 5. Download the kernel source from www.kernel.org
 6. Download the grsecurity patch from grsecurity.net
 7. Verify the downloads and extract the kernel
@@ -48,6 +50,12 @@ The installation will be carried out in the following steps:
 12. Install the debian package
 
 "
+
+if [ -z `which curl` ]; then
+	echo "==> Installing curl ..."
+	apt-get -y -qq install curl
+	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
+fi
 
 echo "==> Checking current versions of grsecurity ..."
 
@@ -120,9 +128,12 @@ fi
 
 
 echo -n "==> Installing packages needed for building the kernel ... ";
-apt-get -y -qq install build-essential bin86 kernel-package libncurses5-dev zlib1g-dev curl
+apt-get -y -qq install build-essential bin86 kernel-package libncurses5-dev zlib1g-dev
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
+GCC_VERSION=`apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
+apt-get -y -qq install gcc-$GCC_VERSION-plugin-dev
+if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 cd /usr/src
 
@@ -217,8 +228,7 @@ if [ $? -eq 0 ]; then echo "phase 2 OK ... "; else echo "Failed"; exit 1; fi
 cd ..
 
 echo -n "==> Installing kernel ... "
-ARCH=`uname -r | sed 's/.*-//'`
-dpkg -i linux-image-$KERNEL-grsec_`echo $REVISION`_$ARCH.deb
+dpkg -i linux-image-$KERNEL-grsec_`echo $REVISION`_*.deb
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 
