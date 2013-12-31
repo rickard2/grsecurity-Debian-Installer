@@ -40,7 +40,7 @@ The installation will be carried out in the following steps:
 2. Letting you chose which version you would like to install
 3. Download PGP keys for download verification (first run only)
 4. Install the following debian packages if needed:
-     build-essential bin86 kernel-package libncurses5-dev zlib1g-dev curl gcc-plugin-dev
+     build-essential bin86 kernel-package libncurses5-dev zlib1g-dev curl gcc-plugin-dev xz-utils
 5. Download the kernel source from www.kernel.org
 6. Download the grsecurity patch from grsecurity.net
 7. Verify the downloads and extract the kernel
