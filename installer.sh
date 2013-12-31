@@ -13,6 +13,9 @@
 # * Grsecurity.net switched to two RSS feeds for the 2.6 and 3.x stable branches
 # * Added gcc-plugin-dev as a requirement
 # * Fixed issues with architecture in the kernel package name after creation
+#
+# Version 1.2, 2013-12-31
+# * Switched to XZ archives, https://www.kernel.org/happy-new-year-and-good-bye-bzip2.html
 
 
 if [ `whoami` != "root" ]; then
@@ -128,7 +131,7 @@ fi
 
 
 echo -n "==> Installing packages needed for building the kernel ... ";
-apt-get -y -qq install build-essential bin86 kernel-package libncurses5-dev zlib1g-dev
+apt-get -y -qq install build-essential bin86 kernel-package libncurses5-dev zlib1g-dev xz-utils
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 GCC_VERSION=`apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
@@ -141,21 +144,21 @@ if [ -h linux ]; then
 	rm linux
 fi
 
-if [ ! -f linux-$KERNEL.tar.bz2 ] && [ ! -f linux-$KERNEL.tar ]; then
+if [ ! -f linux-$KERNEL.tar.xz ] && [ ! -f linux-$KERNEL.tar ]; then
 	echo "==> Downloading kernel version $KERNEL ..."
 
 	BRANCH=`echo $KERNEL | cut -c 1`
 
 	if [ $BRANCH -eq 2 ]; then
-		curl -# -O https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.bz2
+		curl -# -O https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.xz
 		curl -s -O https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.sign
 	elif [ $BRANCH -eq 3 ]; then
-		curl -# -O https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.bz2
+		curl -# -O https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.xz
 		curl -s -O https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.sign
 	fi
 
         echo -n "==> Extracting linux-$KERNEL.tar ... "
-        bzip2 -d linux-$KERNEL.tar.bz2
+        unxz linux-$KERNEL.tar.xz
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
         echo -n "==> Verifying linux-$KERNEL.tar ... "
