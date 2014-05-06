@@ -134,7 +134,7 @@ echo -n "==> Installing packages needed for building the kernel ... ";
 apt-get -y -qq install build-essential bin86 kernel-package libncurses5-dev zlib1g-dev xz-utils
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
-GCC_VERSION=`apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
+GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
 apt-get -y -qq install gcc-$GCC_VERSION-plugin-dev
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
