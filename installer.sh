@@ -76,30 +76,30 @@ TESTING_VERSIONS=`curl --silent https://grsecurity.net/testing_rss.php | grep "p
 
 COUNTER=0
 
-for x in $STABLE_VERSIONS $STABLE2_VERSIONS; do
+for x in ${STABLE_VERSIONS} ${STABLE2_VERSIONS}; do
 
 	let COUNTER=COUNTER+1
 
-	GRSEC=`echo $x | sed -e 's/-/ /g' | awk '{print $1}'`
-	KERNEL=`echo $x | sed -e 's/-/ /g' | awk '{print $2}'`
-	REVISION=`echo $x | sed -e 's/-/ /g' | awk '{print $3}'`
+	GRSEC=`echo ${x} | sed -e 's/-/ /g' | awk '{print $1}'`
+	KERNEL=`echo ${x} | sed -e 's/-/ /g' | awk '{print $2}'`
+	REVISION=`echo ${x} | sed -e 's/-/ /g' | awk '{print $3}'`
 
-	VERSIONS[$COUNTER]=$x-stable
+	VERSIONS[$COUNTER]=${x}-stable
 
-	echo "==> $COUNTER. grsecurity version ${GRSEC} for kernel $KERNEL, revision $REVISION (stable version)"
+	echo "==> $COUNTER. grsecurity version ${GRSEC} for kernel ${KERNEL}, revision ${REVISION} (stable version)"
 done
 
-for x in $TESTING_VERSIONS; do
+for x in ${TESTING_VERSIONS}; do
 
 	let COUNTER=COUNTER+1
 
-	GRSEC=`echo $x | sed -e 's/-/ /g' | awk '{print $1}'`
-	KERNEL=`echo $x | sed -e 's/-/ /g' | awk '{print $2}'`
-	REVISION=`echo $x | sed -e 's/-/ /g' | awk '{print $3}'`
+	GRSEC=`echo ${x} | sed -e 's/-/ /g' | awk '{print $1}'`
+	KERNEL=`echo ${x} | sed -e 's/-/ /g' | awk '{print $2}'`
+	REVISION=`echo ${x} | sed -e 's/-/ /g' | awk '{print $3}'`
 
-	VERSIONS[$COUNTER]=$x-testing
+	VERSIONS[$COUNTER]=${x}-testing
 
-	echo "==> $COUNTER. grsecurity version ${GRSEC} for kernel $KERNEL, revision $REVISION (testing version)"
+	echo "==> $COUNTER. grsecurity version ${GRSEC} for kernel ${KERNEL}, revision ${REVISION} (testing version)"
 done
 
 
@@ -112,10 +112,10 @@ VERSION=`echo $DATA | sed -e 's/-/ /g' | awk '{print $1}'`
 KERNEL=`echo $DATA | sed -e 's/-/ /g' | awk '{print $2}'`
 REVISION=`echo $DATA | sed -e 's/-/ /g' | awk '{print $3}'`
 BRANCH=`echo $DATA | sed -e 's/-/ /g' | awk '{print $4}'`
-GRSEC=`echo $VERSION-$KERNEL-$REVISION`
-KERNEL_BRANCH=`echo $KERNEL | cut -c 1`
+GRSEC=`echo $VERSION-${KERNEL}-${REVISION}`
+KERNEL_BRANCH=`echo ${KERNEL} | cut -c 1`
 
-if [ $BRANCH == "testing" ]; then
+if [ "${BRANCH}" == "testing" ]; then
 	TESTING=y
 else
 	TESTING=n
@@ -126,7 +126,7 @@ echo -n "==> Remove build tools after install? (${BUILDTOOLS}): [y/N] "
 read UNINSTALL
 
 
-echo "==> Installing grsecurity $BRANCH version $VERSION using kernel version $KERNEL ... "
+echo "==> Installing grsecurity ${BRANCH} version $VERSION using kernel version ${KERNEL} ... "
 
 if [ ! -f spender-gpg-key.asc ]; then
 	echo "==> Downloading grsecurity GPG keys for package verification ... "
@@ -154,30 +154,30 @@ if [ -h linux ]; then
 	rm linux
 fi
 
-if [ ! -f linux-$KERNEL.tar.xz ] && [ ! -f linux-$KERNEL.tar ]; then
-	echo "==> Downloading kernel version $KERNEL ... "
+if [ ! -f linux-${KERNEL}.tar.xz ] && [ ! -f linux-${KERNEL}.tar ]; then
+	echo "==> Downloading kernel version ${KERNEL} ... "
 
 	if [ ${KERNEL_BRANCH} -eq 2 ]; then
-		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.xz
-		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.sign
+		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-${KERNEL}.tar.xz
+		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-${KERNEL}.tar.sign
 	elif [ ${KERNEL_BRANCH} -eq 3 ]; then
-		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.xz
-		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.sign
+		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.xz
+		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.sign
 	fi
 
-		echo -n "==> Extracting linux-$KERNEL.tar ... "
-		unxz linux-$KERNEL.tar.xz
+		echo -n "==> Extracting linux-${KERNEL}.tar ... "
+		unxz linux-${KERNEL}.tar.xz
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
-		echo -n "==> Verifying linux-$KERNEL.tar ... "
-		gpg --verify linux-$KERNEL.tar.sign &> /dev/null
+		echo -n "==> Verifying linux-${KERNEL}.tar ... "
+		gpg --verify linux-${KERNEL}.tar.sign &> /dev/null
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
 if [ ! -f grsecurity-${GRSEC}.patch ]; then
 	echo "==> Downloading grsecurity patch version ${GRSEC} ... "
 
-	if [ $TESTING == "y" ]; then
+	if [ "${TESTING}" == "y" ]; then
 		curl --progress-bar --remote-name https://grsecurity.net/test/grsecurity-${GRSEC}.patch
 		curl --silent --remote-name https://grsecurity.net/test/grsecurity-${GRSEC}.patch.sig
 	else
@@ -190,17 +190,17 @@ if [ ! -f grsecurity-${GRSEC}.patch ]; then
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
-if [ ! -d linux-$KERNEL ]; then
-	echo -n "==> Unarchiving linux-$KERNEL.tar ... "
-	tar xf linux-$KERNEL.tar
+if [ ! -d linux-${KERNEL} ]; then
+	echo -n "==> Unarchiving linux-${KERNEL}.tar ... "
+	tar xf linux-${KERNEL}.tar
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
-if [ ! -d linux-$KERNEL-grsec ]; then
-	mv linux-$KERNEL linux-$KERNEL-grsec
+if [ ! -d linux-${KERNEL}-grsec ]; then
+	mv linux-${KERNEL} linux-${KERNEL}-grsec
 fi
 
-ln -s linux-$KERNEL-grsec linux
+ln -s linux-${KERNEL}-grsec linux
 cd linux
 
 patch --silent -p1 --forward --dry-run < ../grsecurity-${GRSEC}.patch &> /dev/null
@@ -239,21 +239,21 @@ echo -n "==> Building kernel ... "
 make-kpkg clean &> /dev/null
 if [ $? -eq 0 ]; then echo -n "phase 1 OK ... "; else echo "Failed"; exit 1; fi
 
-make-kpkg --initrd --revision=$REVISION kernel_image &> /dev/null
+make-kpkg --initrd --revision=${REVISION} kernel_image &> /dev/null
 if [ $? -eq 0 ]; then echo "phase 2 OK ... "; else echo "Failed"; exit 1; fi
 
 cd ..
 
 echo -n "==> Installing kernel ... "
-dpkg -i linux-image-$KERNEL-grsec_`echo $REVISION`_*.deb
+dpkg -i linux-image-${KERNEL}-grsec_`echo ${REVISION}`_*.deb &> /dev/null
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 
 echo -n "==> Cleaning up ... "
-rm linux-$KERNEL.tar linux-$KERNEL.tar.sign grsecurity-${GRSEC}.patch grsecurity-${GRSEC}.patch.sig
+rm linux-${KERNEL}.tar linux-${KERNEL}.tar.sign grsecurity-${GRSEC}.patch grsecurity-${GRSEC}.patch.sig
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
-if [ ${UNINSTALL} == "y" ]; then
+if [ "${UNINSTALL}" == "y" ]; then
 	echo -n "==> Removing build tools ... "
 	apt-get -y -qq remove ${BUILDTOOLS} &> /dev/null
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
