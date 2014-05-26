@@ -112,6 +112,18 @@ else
 	TESTING=n
 fi
 
+echo
+echo
+
+echo "==> Compile Kernel with:"
+echo "==> 1. grsec + shared modules (default)"
+echo "==> 2. grsec + static modules (make localmodconfig and make localyesconfig)"
+echo
+echo "==> If you select static modules, please plug all needed devices for detection"
+echo -n "==> Please make your selection: [1-2]: "
+
+read TYPE
+
 echo "==> Installning grsecurity $BRANCH version $VERSION using kernel version $KERNEL ... "
 
 if [ ! -f spender-gpg-key.asc ]; then
@@ -210,14 +222,24 @@ if [ $BRANCH -eq 3 ]; then
 	cd ..
 fi
 
-cp /boot/config-`uname -r` .config
-if [ -z `grep "CONFIG_GRKERNSEC=y" .config` ]; then
-	echo "==> Current kernel doesn't seem to be running grsecurity. Running 'make menuconfig'"
-	make menuconfig
-else
-	echo -n "==> Current kernel seems to be running grsecurity. Running 'make oldconfig' ... "
-	yes "" | make oldconfig &> /dev/null
+if [ $TYPE -eq 2 ]; then
+	echo "==> Running 'make localmodconfig' ..."
+	make localmodconfig &> /dev/null
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
+
+	echo "==> Running 'make localyesconfig' ..."
+	make localyesconfig
+	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
+else
+	cp /boot/config-`uname -r` .config
+	if [ -z `grep "CONFIG_GRKERNSEC=y" .config` ]; then
+		echo "==> Current kernel doesn't seem to be running grsecurity. Running 'make menuconfig'"
+		make menuconfig
+	else
+		echo -n "==> Current kernel seems to be running grsecurity. Running 'make oldconfig' ... "
+		yes "" | make oldconfig &> /dev/null
+		if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
+	fi
 fi
 
 echo -n "==> Building kernel ... "
