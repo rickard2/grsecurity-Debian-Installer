@@ -19,6 +19,9 @@
 #
 # Version 1.3, 2014-05-26
 # * Added question to remove build tools after install
+# * Fix issue with re-using a downloaded Linux archive
+# * Improved support for re-running a build of the same kernel version
+#
 
 GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
 BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev"
@@ -83,7 +86,7 @@ for x in $STABLE_VERSIONS $STABLE2_VERSIONS; do
 
 	VERSIONS[$COUNTER]=$x-stable
 
-	echo "==> $COUNTER. grsecurity version $GRSEC for kernel $KERNEL, revision $REVISION (stable version)"
+	echo "==> $COUNTER. grsecurity version ${GRSEC} for kernel $KERNEL, revision $REVISION (stable version)"
 done
 
 for x in $TESTING_VERSIONS; do
@@ -96,7 +99,7 @@ for x in $TESTING_VERSIONS; do
 
 	VERSIONS[$COUNTER]=$x-testing
 
-	echo "==> $COUNTER. grsecurity version $GRSEC for kernel $KERNEL, revision $REVISION (testing version)"
+	echo "==> $COUNTER. grsecurity version ${GRSEC} for kernel $KERNEL, revision $REVISION (testing version)"
 done
 
 
@@ -154,10 +157,10 @@ fi
 if [ ! -f linux-$KERNEL.tar.xz ] && [ ! -f linux-$KERNEL.tar ]; then
 	echo "==> Downloading kernel version $KERNEL ... "
 
-	if [ $KERNEL_BRANCH -eq 2 ]; then
+	if [ ${KERNEL_BRANCH} -eq 2 ]; then
 		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.xz
 		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.sign
-	elif [ $KERNEL_BRANCH -eq 3 ]; then
+	elif [ ${KERNEL_BRANCH} -eq 3 ]; then
 		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.xz
 		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.sign
 	fi
@@ -171,19 +174,19 @@ if [ ! -f linux-$KERNEL.tar.xz ] && [ ! -f linux-$KERNEL.tar ]; then
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
-if [ ! -f grsecurity-$GRSEC.patch ]; then
-	echo "==> Downloading grsecurity patch version $GRSEC ... "
+if [ ! -f grsecurity-${GRSEC}.patch ]; then
+	echo "==> Downloading grsecurity patch version ${GRSEC} ... "
 
 	if [ $TESTING == "y" ]; then
-		curl --progress-bar --remote-name https://grsecurity.net/test/grsecurity-$GRSEC.patch
-		curl --silent --remote-name https://grsecurity.net/test/grsecurity-$GRSEC.patch.sig
+		curl --progress-bar --remote-name https://grsecurity.net/test/grsecurity-${GRSEC}.patch
+		curl --silent --remote-name https://grsecurity.net/test/grsecurity-${GRSEC}.patch.sig
 	else
-		curl --progress-bar --remote-name https://grsecurity.net/stable/grsecurity-$GRSEC.patch
-		curl --silent --remote-name https://grsecurity.net/stable/grsecurity-$GRSEC.patch.sig
+		curl --progress-bar --remote-name https://grsecurity.net/stable/grsecurity-${GRSEC}.patch
+		curl --silent --remote-name https://grsecurity.net/stable/grsecurity-${GRSEC}.patch.sig
 	fi
 
 	echo -n "==> Verifying package ... "
-	gpg --verify grsecurity-$GRSEC.patch.sig &> /dev/null
+	gpg --verify grsecurity-${GRSEC}.patch.sig &> /dev/null
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
@@ -200,16 +203,22 @@ fi
 ln -s linux-$KERNEL-grsec linux
 cd linux
 
-echo -n "==> Applying patch ... "
-patch -s -p1 < ../grsecurity-$GRSEC.patch
-if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
+patch --silent -p1 --forward --dry-run < ../grsecurity-${GRSEC}.patch &> /dev/null
+
+if [ $? -eq 0 ]; then
+	echo -n "==> Applying patch ... "
+	patch --silent -p1 --forward < ../grsecurity-${GRSEC}.patch
+	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
+else
+	echo "==> Patch seems to already been applied, skipping ..."
+fi
 
 
 # Fix http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=638012
 #
 # the lguest directory seems to be moving around quite a bit, as of 3.3.something
 # it resides under the tools directory. The best approach should be to just search for it 
-if [ $KERNEL_BRANCH -eq 3 ]; then
+if [ ${KERNEL_BRANCH} -eq 3 ] && [ ! -s Documentation/lguest ]; then
 	cd Documentation
 	find .. -name lguest.c | xargs dirname | xargs ln -s
 	cd ..
@@ -241,7 +250,7 @@ if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 
 echo -n "==> Cleaning up ... "
-rm linux-$KERNEL.tar linux-$KERNEL.tar.sign grsecurity-$GRSEC.patch grsecurity-$GRSEC.patch.sig
+rm linux-$KERNEL.tar linux-$KERNEL.tar.sign grsecurity-${GRSEC}.patch grsecurity-${GRSEC}.patch.sig
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 if [ ${UNINSTALL} == "y" ]; then
