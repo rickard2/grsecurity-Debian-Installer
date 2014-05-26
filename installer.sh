@@ -16,7 +16,12 @@
 #
 # Version 1.2, 2013-12-31
 # * Switched to XZ archives, https://www.kernel.org/happy-new-year-and-good-bye-bzip2.html
+#
+# Version 1.3, 2014-05-26
+# * Added question to remove build tools after install
 
+GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
+BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev"
 
 if [ `whoami` != "root" ]; then
 	echo "This script needs to be run as root!"
@@ -40,15 +45,15 @@ The installation will be carried out in the following steps:
 2. Letting you chose which version you would like to install
 3. Download PGP keys for download verification (first run only)
 4. Install the following debian packages if needed:
-     build-essential bin86 kernel-package libncurses5-dev zlib1g-dev curl gcc-plugin-dev xz-utils
+	 ${BUILDTOOLS} curl xz-utils
 5. Download the kernel source from www.kernel.org
 6. Download the grsecurity patch from grsecurity.net
 7. Verify the downloads and extract the kernel
 8. Apply the grsecurity kernel patch to the kernel source
 9. Copy the current kernel configuration from /boot
 10. Configure the kernel by
-    a) running 'make menuconfig' if the current kernel doesn't support grsecurity
-    b) running 'make oldconfig' if the current kernel supports grsecurity
+	a) running 'make menuconfig' if the current kernel doesn't support grsecurity
+	b) running 'make oldconfig' if the current kernel supports grsecurity
 11. Compile the kernel into a debian package
 12. Install the debian package
 
@@ -56,15 +61,15 @@ The installation will be carried out in the following steps:
 
 if [ -z `which curl` ]; then
 	echo "==> Installing curl ..."
-	apt-get -y -qq install curl
+	apt-get -y -qq install curl &> /dev/null
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
 echo "==> Checking current versions of grsecurity ..."
 
-STABLE_VERSIONS=`curl -s https://grsecurity.net/stable_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
-STABLE2_VERSIONS=`curl -s https://grsecurity.net/stable2_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
-TESTING_VERSIONS=`curl -s https://grsecurity.net/testing_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
+STABLE_VERSIONS=`curl --silent https://grsecurity.net/stable_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
+STABLE2_VERSIONS=`curl --silent https://grsecurity.net/stable2_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
+TESTING_VERSIONS=`curl --silent https://grsecurity.net/testing_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
 
 COUNTER=0
 
@@ -105,6 +110,7 @@ KERNEL=`echo $DATA | sed -e 's/-/ /g' | awk '{print $2}'`
 REVISION=`echo $DATA | sed -e 's/-/ /g' | awk '{print $3}'`
 BRANCH=`echo $DATA | sed -e 's/-/ /g' | awk '{print $4}'`
 GRSEC=`echo $VERSION-$KERNEL-$REVISION`
+KERNEL_BRANCH=`echo $KERNEL | cut -c 1`
 
 if [ $BRANCH == "testing" ]; then
 	TESTING=y
@@ -112,11 +118,16 @@ else
 	TESTING=n
 fi
 
-echo "==> Installning grsecurity $BRANCH version $VERSION using kernel version $KERNEL ... "
+
+echo -n "==> Remove build tools after install? (${BUILDTOOLS}): [y/N] "
+read UNINSTALL
+
+
+echo "==> Installing grsecurity $BRANCH version $VERSION using kernel version $KERNEL ... "
 
 if [ ! -f spender-gpg-key.asc ]; then
 	echo "==> Downloading grsecurity GPG keys for package verification ... "
-	curl -# -O https://grsecurity.net/spender-gpg-key.asc
+	curl --progress-bar --remote-name https://grsecurity.net/spender-gpg-key.asc
 
 	echo -n "==> Importing grsecurity GPG key ... "
 	gpg --import spender-gpg-key.asc &> /dev/null
@@ -131,11 +142,7 @@ fi
 
 
 echo -n "==> Installing packages needed for building the kernel ... ";
-apt-get -y -qq install build-essential bin86 kernel-package libncurses5-dev zlib1g-dev xz-utils
-if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
-
-GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
-apt-get -y -qq install gcc-$GCC_VERSION-plugin-dev
+apt-get -y -qq install ${BUILDTOOLS} xz-utils &> /dev/null
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 cd /usr/src
@@ -145,36 +152,34 @@ if [ -h linux ]; then
 fi
 
 if [ ! -f linux-$KERNEL.tar.xz ] && [ ! -f linux-$KERNEL.tar ]; then
-	echo "==> Downloading kernel version $KERNEL ..."
+	echo "==> Downloading kernel version $KERNEL ... "
 
-	BRANCH=`echo $KERNEL | cut -c 1`
-
-	if [ $BRANCH -eq 2 ]; then
-		curl -# -O https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.xz
-		curl -s -O https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.sign
-	elif [ $BRANCH -eq 3 ]; then
-		curl -# -O https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.xz
-		curl -s -O https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.sign
+	if [ $KERNEL_BRANCH -eq 2 ]; then
+		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.xz
+		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-$KERNEL.tar.sign
+	elif [ $KERNEL_BRANCH -eq 3 ]; then
+		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.xz
+		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-$KERNEL.tar.sign
 	fi
 
-        echo -n "==> Extracting linux-$KERNEL.tar ... "
-        unxz linux-$KERNEL.tar.xz
+		echo -n "==> Extracting linux-$KERNEL.tar ... "
+		unxz linux-$KERNEL.tar.xz
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
-        echo -n "==> Verifying linux-$KERNEL.tar ... "
-        gpg --verify linux-$KERNEL.tar.sign &> /dev/null
+		echo -n "==> Verifying linux-$KERNEL.tar ... "
+		gpg --verify linux-$KERNEL.tar.sign &> /dev/null
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
 if [ ! -f grsecurity-$GRSEC.patch ]; then
-	echo "==> Downloading grsecurity patch version $GRSEC ..."
+	echo "==> Downloading grsecurity patch version $GRSEC ... "
 
 	if [ $TESTING == "y" ]; then
-		curl -# -O https://grsecurity.net/test/grsecurity-$GRSEC.patch
-		curl -s -O https://grsecurity.net/test/grsecurity-$GRSEC.patch.sig
+		curl --progress-bar --remote-name https://grsecurity.net/test/grsecurity-$GRSEC.patch
+		curl --silent --remote-name https://grsecurity.net/test/grsecurity-$GRSEC.patch.sig
 	else
-		curl -# -O https://grsecurity.net/stable/grsecurity-$GRSEC.patch
-		curl -s -O https://grsecurity.net/stable/grsecurity-$GRSEC.patch.sig
+		curl --progress-bar --remote-name https://grsecurity.net/stable/grsecurity-$GRSEC.patch
+		curl --silent --remote-name https://grsecurity.net/stable/grsecurity-$GRSEC.patch.sig
 	fi
 
 	echo -n "==> Verifying package ... "
@@ -204,7 +209,7 @@ if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 #
 # the lguest directory seems to be moving around quite a bit, as of 3.3.something
 # it resides under the tools directory. The best approach should be to just search for it 
-if [ $BRANCH -eq 3 ]; then
+if [ $KERNEL_BRANCH -eq 3 ]; then
 	cd Documentation
 	find .. -name lguest.c | xargs dirname | xargs ln -s
 	cd ..
@@ -225,7 +230,7 @@ echo -n "==> Building kernel ... "
 make-kpkg clean &> /dev/null
 if [ $? -eq 0 ]; then echo -n "phase 1 OK ... "; else echo "Failed"; exit 1; fi
 
-make-kpkg --initrd --revision=$REVISION kernel_image
+make-kpkg --initrd --revision=$REVISION kernel_image &> /dev/null
 if [ $? -eq 0 ]; then echo "phase 2 OK ... "; else echo "Failed"; exit 1; fi
 
 cd ..
@@ -235,6 +240,12 @@ dpkg -i linux-image-$KERNEL-grsec_`echo $REVISION`_*.deb
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 
-echo -n "==> Cleaning up ..."
+echo -n "==> Cleaning up ... "
 rm linux-$KERNEL.tar linux-$KERNEL.tar.sign grsecurity-$GRSEC.patch grsecurity-$GRSEC.patch.sig
 if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
+
+if [ ${UNINSTALL} == "y" ]; then
+	echo -n "==> Removing build tools ... "
+	apt-get -y -qq remove ${BUILDTOOLS} &> /dev/null
+	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
+fi
