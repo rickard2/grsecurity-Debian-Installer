@@ -22,6 +22,9 @@
 # * Fix issue with re-using a downloaded Linux archive
 # * Improved support for re-running a build of the same kernel version
 #
+# Version 1.4, 2014-12-31
+# * Changed URL for detemining the latest versions of grsecurity
+#
 
 GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
 BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev bc"
@@ -70,9 +73,9 @@ fi
 
 echo "==> Checking current versions of grsecurity ..."
 
-STABLE_VERSIONS=`curl --silent https://grsecurity.net/stable_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
-STABLE2_VERSIONS=`curl --silent https://grsecurity.net/stable2_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
-TESTING_VERSIONS=`curl --silent https://grsecurity.net/testing_rss.php | grep "patch</title>" | sed -r 's/<\/?title>//gi' | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
+STABLE_VERSIONS=`curl --silent https://grsecurity.net/latest_stable_patch | sed -e 's/grsecurity-//g'`
+STABLE2_VERSIONS=`curl --silent https://grsecurity.net/latest_stable2_patch | sed -e 's/grsecurity-//g'`
+TESTING_VERSIONS=`curl --silent https://grsecurity.net/latest_test_patch | sed -e 's/grsecurity-//g'`
 
 COUNTER=0
 
