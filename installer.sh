@@ -65,6 +65,40 @@ The installation will be carried out in the following steps:
 
 "
 
+DOWNLOAD_STABLE=1
+DOWNLOAD_STABLE2=1
+DOWNLOAD_TESTING=1
+
+if [ -f latest_stable_patch ]; then
+	STABLE_MTIME=`expr $(date +%s) - $(date +%s -r latest_stable_patch)`
+
+	if [ $STABLE_MTIME -gt 3600 ]; then
+		rm latest_stable_patch
+	else
+		DOWNLOAD_STABLE=0
+	fi
+fi
+
+if [ -f latest_stable2_patch ]; then
+	STABLE2_MTIME=`expr $(date +%s) - $(date +%s -r latest_stable2_patch)`
+
+	if [ $STABLE2_MTIME -gt 3600 ]; then
+		rm latest_stable2_patch
+	else
+		DOWNLOAD_STABLE2=0
+	fi
+fi
+
+if [ -f latest_test_patch ]; then
+	TESTING_MIME=`expr $(date +%s) - $(date +%s -r latest_test_patch)`
+
+	if [ $TESTING_MIME -gt 3600 ]; then
+		rm latest_test_patch
+	else
+		DOWNLOAD_TESTING=0
+	fi
+fi
+
 if [ -z `which curl` ]; then
 	echo "==> Installing curl ..."
 	apt-get -y -qq install curl &> /dev/null
@@ -73,9 +107,21 @@ fi
 
 echo "==> Checking current versions of grsecurity ..."
 
-STABLE_VERSIONS=`curl --silent https://grsecurity.net/latest_stable_patch | sed -e 's/grsecurity-//g'`
-STABLE2_VERSIONS=`curl --silent https://grsecurity.net/latest_stable2_patch | sed -e 's/grsecurity-//g'`
-TESTING_VERSIONS=`curl --silent https://grsecurity.net/latest_test_patch | sed -e 's/grsecurity-//g'`
+if [ $DOWNLOAD_STABLE -eq 1 ]; then
+	curl -O --silent https://grsecurity.net/latest_stable_patch
+fi
+
+if [ $DOWNLOAD_STABLE2 -eq 1 ]; then
+	curl -O --silent https://grsecurity.net/latest_stable2_patch
+fi
+
+if [ $DOWNLOAD_TESTING -eq 1 ]; then
+	curl -O --silent https://grsecurity.net/latest_test_patch
+fi
+
+STABLE_VERSIONS=`cat latest_stable_patch | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
+STABLE2_VERSIONS=`cat latest_stable2_patch | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
+TESTING_VERSIONS=`cat latest_test_patch | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
 
 COUNTER=0
 
@@ -171,11 +217,11 @@ if [ ! -f linux-${KERNEL}.tar.xz ] && [ ! -f linux-${KERNEL}.tar ]; then
 		echo -n "==> Extracting linux-${KERNEL}.tar ... "
 		unxz linux-${KERNEL}.tar.xz
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
-
-		echo -n "==> Verifying linux-${KERNEL}.tar ... "
-		gpg --verify linux-${KERNEL}.tar.sign &> /dev/null
-	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
+
+echo -n "==> Verifying linux-${KERNEL}.tar ... "
+gpg --verify linux-${KERNEL}.tar.sign &> /dev/null
+if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 if [ ! -f grsecurity-${GRSEC}.patch ]; then
 	echo "==> Downloading grsecurity patch version ${GRSEC} ... "
@@ -187,11 +233,11 @@ if [ ! -f grsecurity-${GRSEC}.patch ]; then
 		curl --progress-bar --remote-name https://grsecurity.net/stable/grsecurity-${GRSEC}.patch
 		curl --silent --remote-name https://grsecurity.net/stable/grsecurity-${GRSEC}.patch.sig
 	fi
-
-	echo -n "==> Verifying package ... "
-	gpg --verify grsecurity-${GRSEC}.patch.sig &> /dev/null
-	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
+
+echo -n "==> Verifying grsecurity-${GRSEC}.patch ... "
+gpg --verify grsecurity-${GRSEC}.patch.sig &> /dev/null
+if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 
 if [ ! -d linux-${KERNEL} ]; then
 	echo -n "==> Unarchiving linux-${KERNEL}.tar ... "
