@@ -24,6 +24,8 @@
 #
 # Version 1.4, 2014-12-31
 # * Changed URL for detemining the latest versions of grsecurity
+# * Cache latest versions
+# * Verify archives even if they haven't just been downloaded
 #
 
 GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
