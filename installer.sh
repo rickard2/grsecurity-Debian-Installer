@@ -287,10 +287,12 @@ fi
 
 echo -n "==> Building kernel ... "
 
+NUM_CORES = `grep -c ^processor /proc/cpuinfo`
+
 make-kpkg clean &> /dev/null
 if [ $? -eq 0 ]; then echo -n "phase 1 OK ... "; else echo "Failed"; exit 1; fi
 
-make-kpkg --initrd --revision=${REVISION} kernel_image &> /dev/null
+make-kpkg --jobs=${NUM_CORES} --initrd --revision=${REVISION} kernel_image &> /dev/null
 if [ $? -eq 0 ]; then echo "phase 2 OK ... "; else echo "Failed"; exit 1; fi
 
 cd ..
