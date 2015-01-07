@@ -287,7 +287,7 @@ fi
 
 echo -n "==> Building kernel ... "
 
-NUM_CORES = `grep -c ^processor /proc/cpuinfo`
+NUM_CORES=`grep -c ^processor /proc/cpuinfo`
 
 make-kpkg clean &> /dev/null
 if [ $? -eq 0 ]; then echo -n "phase 1 OK ... "; else echo "Failed"; exit 1; fi
