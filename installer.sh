@@ -4,34 +4,9 @@
 #
 # Author:  Rickard Bennison <rickard@0x539.se>
 # License: WTFPL, see http://www.wtfpl.net/txt/copying/
+# Version: 1.4.1
+# Release: 2015-03-15
 #
-# Version 1.0, 2012-03-31
-#
-# Version 1.1, 2012-05-01
-# * The lguest folder seems to have been moved as of kernel 3.3, changed the code to
-#   try to find the directory dynamically
-#
-# Version 1.1.1, 2013-10-20
-# * Grsecurity.net switched to two RSS feeds for the 2.6 and 3.x stable branches
-# * Added gcc-plugin-dev as a requirement
-# * Fixed issues with architecture in the kernel package name after creation
-#
-# Version 1.2, 2013-12-31
-# * Switched to XZ archives, https://www.kernel.org/happy-new-year-and-good-bye-bzip2.html
-#
-# Version 1.3, 2014-05-26
-# * Added question to remove build tools after install
-# * Fix issue with re-using a downloaded Linux archive
-# * Improved support for re-running a build of the same kernel version
-#
-# Version 1.4, 2014-12-31
-# * Changed URL for detemining the latest versions of grsecurity
-# * Cache latest versions
-# * Verify archives even if they haven't just been downloaded
-#
-# Version 1.4.1, 2015-03-12
-# * Added more secure parameters to curl commands
-# * Added license file
 
 GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
 BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev bc"
@@ -55,7 +30,7 @@ We will be working from /usr/src so make sure to have at least
 
 The installation will be carried out in the following steps:
 1. Fetch the current version from grsecurity.net
-2. Letting you chose which version you would like to install
+2. Letting you choose which version you would like to install
 3. Download PGP keys for download verification (first run only)
 4. Install the following debian packages if needed:
 	 ${BUILDTOOLS} curl xz-utils
