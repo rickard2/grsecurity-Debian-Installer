@@ -1,7 +1,9 @@
 #!/bin/bash
 #
 # Install grsecurity from source, Debian version
-# Rickard Andersson <rickard@0x539.se>
+#
+# Author:  Rickard Bennison <rickard@0x539.se>
+# License: WTFPL, see http://www.wtfpl.net/txt/copying/
 #
 # Version 1.0, 2012-03-31
 #
@@ -27,6 +29,9 @@
 # * Cache latest versions
 # * Verify archives even if they haven't just been downloaded
 #
+# Version 1.4.1, 2015-03-12
+# * Added more secure parameters to curl commands
+# * Added license file
 
 GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
 BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev bc"
