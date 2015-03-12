@@ -107,18 +107,22 @@ if [ -z `which curl` ]; then
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
+function secure_download {
+	curl --progress-bar --remote-name --tlsv1 --proto =https $1
+}
+
 echo "==> Checking current versions of grsecurity ..."
 
 if [ $DOWNLOAD_STABLE -eq 1 ]; then
-	curl -O --silent https://grsecurity.net/latest_stable_patch
+	secure_download https://grsecurity.net/latest_stable_patch
 fi
 
 if [ $DOWNLOAD_STABLE2 -eq 1 ]; then
-	curl -O --silent https://grsecurity.net/latest_stable2_patch
+	secure_download https://grsecurity.net/latest_stable2_patch
 fi
 
 if [ $DOWNLOAD_TESTING -eq 1 ]; then
-	curl -O --silent https://grsecurity.net/latest_test_patch
+	secure_download https://grsecurity.net/latest_test_patch
 fi
 
 STABLE_VERSIONS=`cat latest_stable_patch | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
@@ -181,7 +185,7 @@ echo "==> Installing grsecurity ${BRANCH} version $VERSION using kernel version 
 
 if [ ! -f spender-gpg-key.asc ]; then
 	echo "==> Downloading grsecurity GPG keys for package verification ... "
-	curl --progress-bar --remote-name https://grsecurity.net/spender-gpg-key.asc
+	secure_download https://grsecurity.net/spender-gpg-key.asc
 
 	echo -n "==> Importing grsecurity GPG key ... "
 	gpg --import spender-gpg-key.asc &> /dev/null
@@ -209,11 +213,11 @@ if [ ! -f linux-${KERNEL}.tar.xz ] && [ ! -f linux-${KERNEL}.tar ]; then
 	echo "==> Downloading kernel version ${KERNEL} ... "
 
 	if [ ${KERNEL_BRANCH} -eq 2 ]; then
-		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-${KERNEL}.tar.xz
-		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-${KERNEL}.tar.sign
+		secure_download https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-${KERNEL}.tar.xz
+		secure_download https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-${KERNEL}.tar.sign
 	elif [ ${KERNEL_BRANCH} -eq 3 ]; then
-		curl --progress-bar --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.xz
-		curl --silent --remote-name https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.sign
+		secure_download https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.xz
+		secure_download https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.sign
 	fi
 
 		echo -n "==> Extracting linux-${KERNEL}.tar ... "
@@ -229,11 +233,11 @@ if [ ! -f grsecurity-${GRSEC}.patch ]; then
 	echo "==> Downloading grsecurity patch version ${GRSEC} ... "
 
 	if [ "${TESTING}" == "y" ]; then
-		curl --progress-bar --remote-name https://grsecurity.net/test/grsecurity-${GRSEC}.patch
-		curl --silent --remote-name https://grsecurity.net/test/grsecurity-${GRSEC}.patch.sig
+		secure_download https://grsecurity.net/test/grsecurity-${GRSEC}.patch
+		secure_download https://grsecurity.net/test/grsecurity-${GRSEC}.patch.sig
 	else
-		curl --progress-bar --remote-name https://grsecurity.net/stable/grsecurity-${GRSEC}.patch
-		curl --silent --remote-name https://grsecurity.net/stable/grsecurity-${GRSEC}.patch.sig
+		secure_download https://grsecurity.net/stable/grsecurity-${GRSEC}.patch
+		secure_download https://grsecurity.net/stable/grsecurity-${GRSEC}.patch.sig
 	fi
 fi
 
