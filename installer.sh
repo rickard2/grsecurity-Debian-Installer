@@ -174,7 +174,7 @@ fi
 
 if [ `gpg --list-keys | grep 6092693E | wc -l` -eq 0 ]; then
 	echo -n "==> Fetching kernel GPG key ... "
-	gpg --recv-keys 6092693E &> /dev/null
+	gpg --recv-keys 647F28654894E3BD457199BE38DBBDC86092693E &> /dev/null
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
