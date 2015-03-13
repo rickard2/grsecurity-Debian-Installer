@@ -4,7 +4,7 @@
 #
 # Author:  Rickard Bennison <rickard@0x539.se>
 # License: WTFPL, see http://www.wtfpl.net/txt/copying/
-# Version: 1.4.1
+# Version: 1.4.2
 # Release: 2015-03-15
 #
 
