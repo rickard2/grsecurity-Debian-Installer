@@ -8,7 +8,14 @@
 # Release: 2015-03-15
 #
 
-GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep 'Installed:' | cut -c 16-18`
+POLICY_STRING="Installed"
+
+if [ -z `which gcc` ]; then
+  POLICY_STRING="Candidate"
+fi
+
+GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep "$POLICY_STRING:" | cut -c 16-18`
+
 BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev bc"
 
 if [ `whoami` != "root" ]; then
