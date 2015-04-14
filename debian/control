@@ -14,7 +14,8 @@ Standards-Version: 3.9.4
 
 Package: grsecurity-installer
 Architecture: all
-Depends: kernel-package, curl, ${misc:Depends}
+Depends: build-essential, bin86, kernel-package, libncurses5-dev, zlib1g-dev,
+ gcc-4.7-plugin-dev, bc, xz-utils, curl, ${misc:Depends}
 Description: grsecurity kernel compilation and installation wizard
  Downloads the latest version of grsecurity and the matching kernel.
  Configures the kernel using the current kernel config.
