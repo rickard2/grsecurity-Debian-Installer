@@ -1,0 +1,198 @@
+commit be4f408c44afa9bbc154296883a8192a2b87d21b
+Author: Patrick Schleizer <adrelanos@riseup.net>
+Date:   Tue Apr 14 13:13:36 2015 +0000
+
+    added genmkfile - Makefile - version 1.5
+
+commit bb9e0956418a6c997acf826742a1c09463deb5d1
+Merge: ceb9f89 8a12140
+Author: Rickard Bennison <rickard@0x539.se>
+Date:   Tue Apr 7 22:11:26 2015 +0200
+
+    Merge pull request #14 from sinner-/master
+    
+    gcc install check for GCC_VERSION
+
+commit 8a12140992ae0867eae8f6136a1b9583b1ce7abd
+Author: Sina Sadeghi <sina.sa@gmail.com>
+Date:   Sat Apr 4 23:19:33 2015 +1100
+
+    gcc install check for GCC_VERSION
+    
+    if gcc is not installed then use "Candidate" as the policy
+    string rather than "Installed".
+    
+    Without this patch, if gcc is not installed, GCC_VERSION
+    expands as "one" and causes the script to error.
+
+commit ceb9f8979a7e1e89ea166bd850e0ad99b2ab8dae
+Author: Rickard Bennison <rickard@0x539.se>
+Date:   Fri Mar 13 17:23:48 2015 +0100
+
+    version bump
+
+commit 760e885d0cdf75d961fad2608a29cec97e606533
+Author: Rickard Bennison <rickard@0x539.se>
+Date:   Fri Mar 13 17:21:08 2015 +0100
+
+    using gpg short ids is a security issue, fixes #10
+
+commit 489211d2006810b6d72c544b5734ccc188554d3e
+Author: Rickard Bennison <rickard@0x539.se>
+Date:   Thu Mar 12 23:52:47 2015 +0100
+
+    Move version log to separate file
+
+commit 7ba1695c20b573d5b979deeb60205c4cc7f122ad
+Author: Rickard Bennison <rickard@0x539.se>
+Date:   Thu Mar 12 22:56:12 2015 +0100
+
+    Resolved licensing issue, fixes #12
+
+commit 0a60b8c86dfa6e327d479aba7efc664b86600d42
+Author: Rickard Bennison <rickard@0x539.se>
+Date:   Thu Mar 12 22:52:38 2015 +0100
+
+    enforce ssl using safer curl parameters, fixes #11
+
+commit 23d603d2cd7b6e7f10685d7488f5ba2518f817d9
+Merge: fbeeee8 64ee642
+Author: Rickard Bennison <rickard@0x539.se>
+Date:   Sun Jan 11 17:33:38 2015 +0100
+
+    Merge pull request #8 from rufoa/master
+    
+    parallelise build
+
+commit 64ee64235baec6153b280615fbcd7abdb6056544
+Author: rufoa <rufo@rufoa.com>
+Date:   Wed Jan 7 18:47:07 2015 +0000
+
+    typo
+
+commit 3c77635426589bafc7d40044166336f47ba63993
+Author: rufo <rufo@rufoa.com>
+Date:   Wed Jan 7 18:01:42 2015 +0000
+
+    parallelise build
+
+commit fbeeee87d817a972985a39e6b9ee6b0ddf11755b
+Author: rickard <rickard@montania.se>
+Date:   Sun Dec 21 11:21:45 2014 +0100
+
+    Docs
+
+commit 192aeb25a3ca12dad061d44aac30f08954c5a810
+Author: rickard <rickard@montania.se>
+Date:   Sun Dec 21 11:21:21 2014 +0100
+
+    Cache versions, verify archives even if they haven't just been downloaded
+
+commit e91755c1f4e85302d2c742b5a61203834deaf83d
+Author: rickard <rickard@montania.se>
+Date:   Sun Dec 21 10:55:41 2014 +0100
+
+    Changed URL for detemining the latest versions of grsecurity
+
+commit 19031624ea6a204ab12c597bc16c960f32a6dad7
+Merge: 84f6712 1907627
+Author: Rickard Bennison <rickard@0x539.se>
+Date:   Tue Oct 28 17:54:03 2014 +0100
+
+    Merge pull request #7 from monolith81/master
+    
+    Add bc as dependency
+
+commit 1907627b557d12b38892297fa78d438edc093a39
+Author: monolith81 <mark.breyer@gmail.com>
+Date:   Tue Oct 28 10:42:19 2014 +0100
+
+    Update installer.sh
+    
+    added package "bc" to BUILDTOOLS
+
+commit 84f6712a7a88312f84e6511736b8a850e242f6ac
+Author: rickard <rickard@montania.se>
+Date:   Mon May 26 23:58:51 2014 +0200
+
+    Variable name fixes
+
+commit bfc6f35ec843d0427c0fd8fcd2e611241e1b7764
+Author: rickard <rickard@montania.se>
+Date:   Mon May 26 19:15:41 2014 +0200
+
+    Improve support for re-running the same build
+
+commit a273070dd93dd9082cc0fa1185104d3c806ab6cc
+Author: rickard <rickard@montania.se>
+Date:   Mon May 26 18:52:07 2014 +0200
+
+    Prompt to remove build tools after installation, fixes #5
+
+commit 5f325a4e8f1aac83390900b0e18ca62e7fd2849e
+Author: Rickard Andersson <rickard@0x539.se>
+Date:   Tue May 6 19:50:45 2014 +0200
+
+    Always use english language when determining GCC version. Fixes #3
+
+commit d8a9ad120f65581d4583c9969029bbf3e26f288f
+Author: rickard <rickard@montania.se>
+Date:   Tue Dec 31 12:01:03 2013 +0100
+
+    add xz-utils as dependency in description
+
+commit 91200760d450b000ab3b91602abd9be4b706ec20
+Author: rickard <rickard@montania.se>
+Date:   Tue Dec 31 11:58:40 2013 +0100
+
+    switch to xz archives
+
+commit 426b153c335b57daee323159a001df9b38212069
+Author: Rickard Andersson <rickard@0x539.se>
+Date:   Mon Oct 21 08:46:38 2013 +0200
+
+    Update installer.sh
+    
+    Added gcc-plugin-dev as requirement and fixed architecture naming error when installing the build package
+
+commit af14185a3ca2a3e340a6371c0e952a79857941c3
+Author: Rickard Andersson <rickard@0x539.se>
+Date:   Sun Oct 20 12:07:29 2013 +0200
+
+    Update installer.sh
+    
+    Add support for both stable_rss and stable2_rss feeds
+
+commit 8d26ba77ad86e9542810607dbb106ea9f4a55d41
+Merge: abd319e cdf32dd
+Author: Rickard Andersson <rickard@0x539.se>
+Date:   Thu Apr 11 14:03:04 2013 -0700
+
+    Merge pull request #1 from devinc/master
+    
+    corrected old grsecurity setting detection
+
+commit cdf32dd4205d066e2c0ef6cf2b6b73a4a9989fab
+Author: Devin Cook <devin@devincook.net>
+Date:   Thu Apr 11 01:29:46 2013 -0500
+
+    fixed a syntax error I introduced
+    also made it work on architectures other than i386
+
+commit acb2dac8f7a83aee1ecb3f286d049a73efee5d6b
+Author: Devin Cook <devin@devincook.net>
+Date:   Wed Apr 10 17:00:57 2013 -0500
+
+    corrected old grsecurity setting detection
+
+commit abd319e4069251eb5d934736e1d540cd4f38e6a7
+Author: Rickard Andersson <rickard@0x539.se>
+Date:   Tue May 1 20:40:34 2012 +0200
+
+    updated linking of lguest directory
+
+commit 245bb5b42851497c9c8eb5a71a25f03515970c01
+Author: Rickard Andersson <rickard@rajesh.0x539.se>
+Date:   Sat Mar 31 20:41:12 2012 +0200
+
+    import
