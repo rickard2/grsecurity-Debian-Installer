@@ -5,7 +5,7 @@
 ## See the file COPYING for copying conditions.
 
 make_get_destdir_hook_post() {
-  DESTDIR="$DESTDIR/usr/bin"
+   DESTDIR="$DESTDIR/usr/bin"
 }
 
 make_helper() {
