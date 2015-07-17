@@ -205,6 +205,9 @@ if [ ! -f linux-${KERNEL}.tar.xz ] && [ ! -f linux-${KERNEL}.tar ]; then
 	elif [ ${KERNEL_BRANCH} -eq 3 ]; then
 		secure_download https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.xz
 		secure_download https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.sign
+	elif [ ${KERNEL_BRANCH} -eq 4 ]; then
+		secure_download https://www.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.xz
+		secure_download https://www.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.sign
 	fi
 
 		echo -n "==> Extracting linux-${KERNEL}.tar ... "
@@ -260,10 +263,12 @@ fi
 #
 # the lguest directory seems to be moving around quite a bit, as of 3.3.something
 # it resides under the tools directory. The best approach should be to just search for it 
-if [ ${KERNEL_BRANCH} -eq 3 ] && [ ! -s Documentation/lguest ]; then
-	cd Documentation
-	find .. -name lguest.c | xargs dirname | xargs ln -s
-	cd ..
+if [ ! -s Documentation/lguest ]; then
+	if [ ${KERNEL_BRANCH} -eq 3 ] || [ ${KERNEL_BRANCH} -eq 4 ]; then
+		cd Documentation
+		find .. -name lguest.c | xargs dirname | xargs ln -s
+		cd ..
+	fi
 fi
 
 cp /boot/config-`uname -r` .config
