@@ -10,6 +10,9 @@
 
 POLICY_STRING="Installed"
 
+# Make sure apt-get calls are truly non-interactive
+export DEBIAN_FRONTEND=noninteractive
+
 if [ -z `which gcc` ]; then
   POLICY_STRING="Candidate"
 fi
