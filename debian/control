@@ -1,0 +1,23 @@
+## This file is part of Whonix.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+Source: grsecurity-installer
+Section: misc
+Priority: optional
+Maintainer: Patrick Schleizer <adrelanos@riseup.net>
+Build-Depends: debhelper (>= 9), faketime, genmkfile, ruby-ronn (>= 0.7.3)
+Homepage: https://github.com/Whonix/grsecurity-installer
+Vcs-Browser: https://github.com/Whonix/grsecurity-installer
+Vcs-Git: https://github.com/Whonix/grsecurity-installer.git
+Standards-Version: 3.9.4
+
+Package: grsecurity-installer
+Architecture: all
+Depends: build-essential, bin86, kernel-package, libncurses5-dev, zlib1g-dev,
+ gcc-4.7-plugin-dev, bc, xz-utils, curl, ${misc:Depends}
+Description: grsecurity kernel compilation and installation wizard
+ Downloads the latest version of grsecurity and the matching kernel.
+ Configures the kernel using the current kernel config.
+ Compiles the kernel into a neat Debian package using make-kpkg.
+ Installs the Debian package on the system.
