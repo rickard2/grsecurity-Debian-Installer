@@ -97,6 +97,12 @@ if [ -z `which curl` ]; then
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
+if [ -z `which gpg` ]; then
+	echo "==> Installing gnupg ..."
+	apt-get -y -qq install gnupg &> /dev/null
+	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
+fi
+
 function secure_download {
 	curl --progress-bar --remote-name --tlsv1 --proto =https $1
 }
@@ -265,7 +271,7 @@ fi
 # Fix http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=638012
 #
 # the lguest directory seems to be moving around quite a bit, as of 3.3.something
-# it resides under the tools directory. The best approach should be to just search for it 
+# it resides under the tools directory. The best approach should be to just search for it
 if [ ! -s Documentation/lguest ]; then
 	if [ ${KERNEL_BRANCH} -eq 3 ] || [ ${KERNEL_BRANCH} -eq 4 ]; then
 		cd Documentation
