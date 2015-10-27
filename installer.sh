@@ -153,8 +153,8 @@ fi
 if [ ! -f linux-${KERNEL}.tar.xz ] && [ ! -f linux-${KERNEL}.tar ]; then
 	echo "==> Downloading kernel version ${KERNEL} ... "
 
-	secure_download https://www.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.xz
-	secure_download https://www.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.sign
+	secure_download https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.xz
+	secure_download https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.sign
 
 	echo -n "==> Extracting linux-${KERNEL}.tar ... "
 	unxz linux-${KERNEL}.tar.xz
