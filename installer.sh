@@ -19,7 +19,11 @@ fi
 
 GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep "$POLICY_STRING:" | cut -c 16-18`
 
-BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev bc"
+if [[ $GCC_VERSION == 5.* ]]; then
+  BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-5-plugin-dev bc libmpc-dev"
+else
+  BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev bc"
+fi
 
 if [ `whoami` != "root" ]; then
 	echo "This script needs to be run as root!"
