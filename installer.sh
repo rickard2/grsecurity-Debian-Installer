@@ -19,7 +19,11 @@ fi
 
 GCC_VERSION=`LANGUAGE=C apt-cache policy gcc | grep "$POLICY_STRING:" | cut -c 16-18`
 
-BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev bc"
+if [[ $GCC_VERSION == 5.* ]]; then
+  BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-5-plugin-dev bc libmpc-dev"
+else
+  BUILDTOOLS="build-essential bin86 kernel-package libncurses5-dev zlib1g-dev gcc-${GCC_VERSION}-plugin-dev bc"
+fi
 
 if [ `whoami` != "root" ]; then
 	echo "This script needs to be run as root!"
@@ -57,37 +61,15 @@ The installation will be carried out in the following steps:
 
 "
 
-DOWNLOAD_STABLE=1
-DOWNLOAD_STABLE2=1
-DOWNLOAD_TESTING=1
-
-if [ -f latest_stable_patch ]; then
-	STABLE_MTIME=`expr $(date +%s) - $(date +%s -r latest_stable_patch)`
-
-	if [ $STABLE_MTIME -gt 3600 ]; then
-		rm latest_stable_patch
-	else
-		DOWNLOAD_STABLE=0
-	fi
-fi
-
-if [ -f latest_stable2_patch ]; then
-	STABLE2_MTIME=`expr $(date +%s) - $(date +%s -r latest_stable2_patch)`
-
-	if [ $STABLE2_MTIME -gt 3600 ]; then
-		rm latest_stable2_patch
-	else
-		DOWNLOAD_STABLE2=0
-	fi
-fi
+DOWNLOAD=1
 
 if [ -f latest_test_patch ]; then
-	TESTING_MIME=`expr $(date +%s) - $(date +%s -r latest_test_patch)`
+	MIME=`expr $(date +%s) - $(date +%s -r latest_test_patch)`
 
-	if [ $TESTING_MIME -gt 3600 ]; then
+	if [ $MIME -gt 3600 ]; then
 		rm latest_test_patch
 	else
-		DOWNLOAD_TESTING=0
+		DOWNLOAD=0
 	fi
 fi
 
@@ -103,38 +85,15 @@ function secure_download {
 
 echo "==> Checking current versions of grsecurity ..."
 
-if [ $DOWNLOAD_STABLE -eq 1 ]; then
-	secure_download https://grsecurity.net/latest_stable_patch
-fi
-
-if [ $DOWNLOAD_STABLE2 -eq 1 ]; then
-	secure_download https://grsecurity.net/latest_stable2_patch
-fi
-
-if [ $DOWNLOAD_TESTING -eq 1 ]; then
+if [ $DOWNLOAD -eq 1 ]; then
 	secure_download https://grsecurity.net/latest_test_patch
 fi
 
-STABLE_VERSIONS=`cat latest_stable_patch | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
-STABLE2_VERSIONS=`cat latest_stable2_patch | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
-TESTING_VERSIONS=`cat latest_test_patch | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
+VERSIONS=`cat latest_test_patch | sed -e 's/\.patch//g' | sed -e 's/grsecurity-//g'`
 
 COUNTER=0
 
-for x in ${STABLE_VERSIONS} ${STABLE2_VERSIONS}; do
-
-	let COUNTER=COUNTER+1
-
-	GRSEC=`echo ${x} | sed -e 's/-/ /g' | awk '{print $1}'`
-	KERNEL=`echo ${x} | sed -e 's/-/ /g' | awk '{print $2}'`
-	REVISION=`echo ${x} | sed -e 's/-/ /g' | awk '{print $3}'`
-
-	VERSIONS[$COUNTER]=${x}-stable
-
-	echo "==> $COUNTER. grsecurity version ${GRSEC} for kernel ${KERNEL}, revision ${REVISION} (stable version)"
-done
-
-for x in ${TESTING_VERSIONS}; do
+for x in ${VERSIONS}; do
 
 	let COUNTER=COUNTER+1
 
@@ -158,14 +117,6 @@ KERNEL=`echo $DATA | sed -e 's/-/ /g' | awk '{print $2}'`
 REVISION=`echo $DATA | sed -e 's/-/ /g' | awk '{print $3}'`
 BRANCH=`echo $DATA | sed -e 's/-/ /g' | awk '{print $4}'`
 GRSEC=`echo $VERSION-${KERNEL}-${REVISION}`
-KERNEL_BRANCH=`echo ${KERNEL} | cut -c 1`
-
-if [ "${BRANCH}" == "testing" ]; then
-	TESTING=y
-else
-	TESTING=n
-fi
-
 
 echo -n "==> Remove build tools after install? (${BUILDTOOLS}): [y/N] "
 read UNINSTALL
@@ -202,19 +153,11 @@ fi
 if [ ! -f linux-${KERNEL}.tar.xz ] && [ ! -f linux-${KERNEL}.tar ]; then
 	echo "==> Downloading kernel version ${KERNEL} ... "
 
-	if [ ${KERNEL_BRANCH} -eq 2 ]; then
-		secure_download https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-${KERNEL}.tar.xz
-		secure_download https://www.kernel.org/pub/linux/kernel/v2.6/longterm/v2.6.32/linux-${KERNEL}.tar.sign
-	elif [ ${KERNEL_BRANCH} -eq 3 ]; then
-		secure_download https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.xz
-		secure_download https://www.kernel.org/pub/linux/kernel/v3.0/linux-${KERNEL}.tar.sign
-	elif [ ${KERNEL_BRANCH} -eq 4 ]; then
-		secure_download https://www.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.xz
-		secure_download https://www.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.sign
-	fi
+	secure_download https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.xz
+	secure_download https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-${KERNEL}.tar.sign
 
-		echo -n "==> Extracting linux-${KERNEL}.tar ... "
-		unxz linux-${KERNEL}.tar.xz
+	echo -n "==> Extracting linux-${KERNEL}.tar ... "
+	unxz linux-${KERNEL}.tar.xz
 	if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 fi
 
@@ -225,13 +168,8 @@ if [ $? -eq 0 ]; then echo "OK"; else echo "Failed"; exit 1; fi
 if [ ! -f grsecurity-${GRSEC}.patch ]; then
 	echo "==> Downloading grsecurity patch version ${GRSEC} ... "
 
-	if [ "${TESTING}" == "y" ]; then
-		secure_download https://grsecurity.net/test/grsecurity-${GRSEC}.patch
-		secure_download https://grsecurity.net/test/grsecurity-${GRSEC}.patch.sig
-	else
-		secure_download https://grsecurity.net/stable/grsecurity-${GRSEC}.patch
-		secure_download https://grsecurity.net/stable/grsecurity-${GRSEC}.patch.sig
-	fi
+	secure_download https://grsecurity.net/test/grsecurity-${GRSEC}.patch
+	secure_download https://grsecurity.net/test/grsecurity-${GRSEC}.patch.sig
 fi
 
 echo -n "==> Verifying grsecurity-${GRSEC}.patch ... "
@@ -267,11 +205,9 @@ fi
 # the lguest directory seems to be moving around quite a bit, as of 3.3.something
 # it resides under the tools directory. The best approach should be to just search for it 
 if [ ! -s Documentation/lguest ]; then
-	if [ ${KERNEL_BRANCH} -eq 3 ] || [ ${KERNEL_BRANCH} -eq 4 ]; then
-		cd Documentation
-		find .. -name lguest.c | xargs dirname | xargs ln -s
-		cd ..
-	fi
+	cd Documentation
+	find .. -name lguest.c | xargs dirname | xargs ln -s
+	cd ..
 fi
 
 cp /boot/config-`uname -r` .config
